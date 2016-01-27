@@ -12,79 +12,35 @@ excerpt: >
 ---
 {% include _toc.html %}
 
-The Segregated Witness soft-fork (segwit) includes a wide range of
-features, many of which are highly technical. This page summarises
-some of the benefits of those features that go beyond simply increasing
-the capacity of the block chain.
 隔离见证软分叉（segwit）包括很多的特性，其中许多是技术性很强的。
 此页面总结了那些除了增加块链的容量之外特性的好处。
 
 ## 修复延展性问题
 
-
-Bitcoin transactions are identified by a 64-digit hexadecimal hash
-called a transaction identifier (txid)
-which is based on both the coins being spent and on who
-will be able to spend the results of the transaction.
 比特币交易是由一串64位的十六进制哈希交易ID（TxID）标识的，这是基于
 交易中币的来源和币的接收者确定的。
 
-Unfortunately,
 不幸的是,
-the way the txid is calculated allows anyone to make small
-modifications to the transaction that will not change its meaning,
-but will change the txid.  This is called third-party malleability.
-BIP 62 ("dealing with malleability") attempted to
-address these issues in a piecemeal manner, but was too complicated to
-implement as consensus checks and has been withdrawn.
 TxID的计算方法允许任何人可以对交易做小的修动，虽然不会改变交易的内容，但会改变TxID。
 这就是所谓的第三方延展性。BIP62（"处理可塑性"）试图以一些方式解决这些问题
 ，但是它太复杂了，以至于无法实现为共识检查,所以已经被放弃了。
 
-For example, you could submit a transaction with txid ef74...c309 to
-the network, but instead find that a third-party, such as a node on
-the network relaying your transaction, or the miner who includes your
-transaction in a block, modifies the transaction slightly, resulting in
-your transaction still spending the same coins and paying the same addresses,
-but being confirmed under the completely different txid 683f...8bfa instead.
 例如，您可以发送TxID为ef74... C309到比特币网络，当网络中的节点中继
 这笔交易，或者矿工打包交易到区块中的时候，它们可以轻微修改这笔交易，导致您的
 交易仍然花一样的币，并支付到相同的地址，但是以完全不同的TxID 683f...8bfa出现。
 
-More generally, if one or more of the signers of the transaction revise
-their signatures then the transaction remains valid and pays the same
-amounts to the same addresses, but the txid changes completely
-because it incorporates the signatures. The general case of changes to
-signature data (but not the outputs or choice of inputs) modifying the
-transaction is called scriptSig malleability.
 更通俗的说，如果一笔交易的一个或更多个签名者修改他们的签名, 那么交易仍然有效
 并且支付相同的比特币，以相同的地址，但这笔交易的TxID完全改变，因为它们组成签名。
 更改签名数据（但不改变output或input）来修改交易的情况称为scriptSig延展性。
 
-Segwit prevents third-party and scriptSig malleability by allowing Bitcoin users to move the
-malleable parts of the transaction into the *transaction witness,* and
-segregating that witness so that changes to the witness does not affect
-calculation of the txid.
 Segwit可以防止第三方和scriptSig延展性, 通过把比特币交易中的的可修改部分移动到 
 *见证交易*里, 并且分离后不影响TxID的计算。
 
-### 谁能从这个特性得到好处?
-
-- **Wallet authors tracking spent bitcoins:** it's easiest to
-  monitor the status of your own outgoing transactions by simply looking them up by txid.  But in
-  a system with third-party malleability, wallets must implement extra
-  code to be able to deal with changed txids.
+### 谁将从中受益?
 
 - **钱包作者用来监控发出比特币：** 这是最简单的，只需要监控发出的TxID的状态就
   可以。 但是在存在第三方延展性问题的系统里，钱包必须添加额外的代码，以便能够
   应对变化的txids。
-
-- **Anyone spending unconfirmed transactions:** if Alice pays Bob in
-  transaction 1, Bob uses that payment to pay Charlie in transaction 2, and then Alice's
-  payment gets malleated and confirmed with a different txid, then transaction
-  2 is now invalid and Charlie has not been paid.
-  If Bob is trustworthy, he will reissue the payment to Charlie; but if he
-  isn't, he can simply keep those bitcoins for himself.
 
 -  **花费未确认的交易：** 如果Alice在交易1支付Bob一些币，Bob在交易2
    使用收到的付款支付给Charlie，然后Alice的付款发生延展性修改,并用不同的TxID
@@ -92,27 +48,14 @@ Segwit可以防止第三方和scriptSig延展性, 通过把比特币交易中的
    如果Bob是值得信赖的，他会重新发出一笔交易给查理;但如果他不是，他可以简单
    地保持这些比特币给自己。
 
-- **The Lightning Network:** with third-party and scriptSig malleability
-  fixed, the Lightning Network is less complicated to implement and
-  significantly more efficient in its use of space on the blockchain.
-  With scriptSig malleability removed, it also becomes possible to run lightweight
-  Lightning clients that outsource monitoring the blockchain, instead of
-  each Lightning client needing to also be a full Bitcoin node.
-
 - **闪电网络:** 第三方和scriptSig延展性问题修复后可以降低闪电网络实现的的复杂性
   ， 而且在使用blockchain的空间上将更加有效. scriptSig延展性删除后，它也可能运
   行轻量级的lighting客户端服务去监测区块链,而不是每个lightning客户端都运行比特
   币完整节点。
 
-- **Anyone using the block chain:** smart contracts today, such as
-  micropayment channels, and anticipated new smart contracts, become less
-  complicated to design, understand, and monitor.
 - **任何使用区块链的人:** 目前的智能合约，比如小额支付通道，预期新的智能合同，
   将会变得不用那么复杂的设计，理解和监控。
 
-Note: segwit transactions only avoid malleability if all their inputs are
-segwit spends (either directly, or via a backwards compatible segwit
-P2SH address).
 注意：segwit交易只能在当所有input都是segwit交易（直接或经由一个向后兼容
 的segwit P2SH地址）下避免延展性问题。
 
@@ -128,47 +71,29 @@ P2SH address).
 
 ## 线性增长sighash的操作
 
-A major problem with simple approaches to increasing the Bitcoin blocksize
-is that for certain transactions, signature-hashing scales quadratically
-rather than linearly.
 用简单的方法来增加比特币区块大小的一个主要问题是，对于某些交易，签名散列增长
 是平方增长的, 而不是线性增长的。
 
 ![Linear versus quadratic](/assets/images/linear-quad-scale.png)
 
-In essence, doubling the size of a transaction
-increases can double both the number of signature operations, and the
-amount of data that has to be hashed for each of those signatures to
-be verified. This has been seen in the wild, where an individual block
-required 25 seconds to validate, and maliciously designed transactions
-could take over 3 minutes.
 在本质上，一个交易的大小增加一倍,签名操作的个数也增加一倍, 以及那些进行验证签名
 需要哈希的数据也应该增加一倍. 但曾经已经出现过，一个单独的块需要25秒验证,其他
 一些恶意设计的交易可能需要超过3分钟。
 
-Segwit resolves this by changing the calculation of the transaction hash
-for signatures so that each byte of a transaction only needs to be hashed
-at most twice. This provides the same functionality more efficiently,
-so that large transactions can still be generated without running into
-problems due to signature hashing, even if they are generated maliciously
-or much larger blocks (and therefore larger transactions) are supported.
 Segwit通过改变交易哈希签名的计算方式可以解决此问题，使得交易的每个字节只需要至
 多两次哈希。 这提供了相同的功能但更有效率，使得大的交易仍可以产生而不会有签名
 哈希问题，即使有人生成恶意的或更大的块（并较大的交易）也是支持的。
 
-### Who benefits?
+### 谁将从中受益?
 
-Removing the quadratic scaling of hashed data for verifying signatures
-makes increasing the block size safer. Doing that without also limiting
-transaction sizes allows Bitcoin to continue to support payments that go to or
-come from large groups, such as payments of mining rewards or crowdfunding
-services.
+删除验证签名需要的哈希数据的平方伸缩问题，使增长块大小更安全。这样做并没有
+限制交易大小, 所以仍然可以继续支持支付或者接收来自于大的组织的比特币,比如挖矿
+奖励或众筹服务。
 
-The modified hash only applies to signature operations initiated from
-witness data, so signature operations from the base block will continue
-to require lower limits.
+修改后的哈希仅适用于从witness数据发起签名操作，所以从旧的区块发起的签名操作将
+继续需要限制签名操作数下限。
 
-### Further information
+### 更多信息
 
  * [BIP 143](https://github.com/bitcoin/bips/blob/master/bip-0143.mediawiki)
  * [Blog post by Rusty Russell on the 25s transaction](http://rusty.ozlabs.org/?p=522)
@@ -176,31 +101,26 @@ to require lower limits.
  * [Proposal to limit transactions to 100kB](https://lists.linuxfoundation.org/pipermail/bitcoin-dev/2015-July/009494.html)
  * [Bitcoin Classic commit on 0.11.2 branch adding additional consensus limit on sighash bytes](https://github.com/bitcoinclassic/bitcoinclassic/commit/842dc24b23ad9551c67672660c4cba882c4c840a)
 
-## Signing of input values
+## input值的签署
 
-When a hardware wallet signs a transaction, it can easily verify the total
-amount being spent, but can only safely determine the fee by having a
-full copy of all the input transactions being spent, and must hash each
-of those to ensure it is not being fed false data. Since individual
-transactions can be up to 1MB in size, this is not necessarily a cheap
-operation, even if the transaction being signed is itself quite small.
+当硬件钱包签署一个交易的时候，它可以很容易的证花费的总金额，但必须使用每个
+input交易的完整副本来确定是否安全，而且必须计算每个input的哈希以确保它们不
+是虚假数据。个别交易大小可高达1MB大小，这不一定是一种廉价的操作，即使被签
+名的交易本身是相当小的。
 
-Segwit resolves this by explicitly hashing the input value. This means
-that a hardware wallet can simply be given the transaction hash, index,
-and value (and told what public key was used), and can safely sign the
-spending transaction, no matter how large or complicated the transaction
-being spent was.
+Segwit使input哈希变的精确从而解决了此问题。这意味着硬件的钱包可以简单地给出
+交易哈希，索引和值（和说明使用什么样的公钥），并可以放心地签署发出的交易，
+无论花费的input交易有多大或多复杂。
 
-### Who benefits?
+### 谁将从中受益?
 
-Manufacturers and users of hardware wallets are the obvious beneficiaries;
-however this likely also makes it much easier to safely use Bitcoin in
-small embedded devices for "Internet of things" applications.
+硬件钱包制造商和用户是明显的受益者.然而，这也使得它更容易，安全地在小型嵌入式
+设备的“物联网”的应用程序中使用比特币。
 
-This benefit is only available when spending transactions sent to segwit
-enabled addresses (or segwit-via-P2SH addresses).
+这样的益处只能用在花费发送到隔离验证地址的比特币（或从segwit-到-P2SH地址）
+的交易时.
 
-### Further information
+### 更多信息
 
  * [BIP 143](https://github.com/bitcoin/bips/blob/master/bip-0143.mediawiki)
 
@@ -219,10 +139,11 @@ Segwit resolves this by using HASH160 only for payments direct to a
 single public key (where this sort of attack is useless), while using
 256-bit SHA256 hashes for payments to a script hash.
 
-### Who benefits?
+### 谁将从中受益?
 
 Everyone paying to multisig or smart contracts via segwit benefits from
 the extra security provided for scripts.
+ 每个人都支付给multisig或通过从提供的脚本额外的安全segwit益精明的合同。
 
 ### Further information
 
@@ -249,7 +170,7 @@ additional opcodes that would have required a hard-fork to be used
 in non-segwit transactions can instead be supported by simply increasing the
 script version.
 
-### Who benefits?
+### 谁将从中受益?
 
 Easier changes to script opcodes will make advanced scripting in Bitcoin
 easier. This includes changes such as introducing Schnorr signatures,
@@ -281,7 +202,7 @@ new features in a way that will also minimise the impact on the UTXO set.
 Because segwit is a soft-forking change and does not increase the base
 blocksize, the worst case growth rate of the UTXO set stays the same.
 
-### Who benefits?
+### 谁将从中受益?
 
 Reduced UTXO growth will benefit miners, businesses, and users who run full nodes,
 which in turn helps maintain the current security of the Bitcoin network
@@ -307,7 +228,7 @@ clients to enforce consensus rules such such as the number of bitcoins
 introduced in a block, the size of a block, and the number of sigops
 used in a block.
 
-### Who benefits?
+### 谁将从中受益?
 
 Fraud proofs allow SPV users to help enforce Bitcoin's consensus rules,
 which will potentially greatly increase the security of the Bitcoin
@@ -332,7 +253,7 @@ Segregating the signature data allows nodes that aren't interested in
 signature data to prune it from the disk, or to avoid downloading it in the
 first place, saving resources.
 
-### Who benefits?
+### 谁将从中受益?
 
 As more transactions use segwit addresses, people running pruned or SPV
 nodes will be able to operate with less bandwidth and disk space.
@@ -360,7 +281,7 @@ instead a single limit is applied to the weighted sum
 of the UTXO data and the witness data, allowing both to be
 limited simultaneously as a combined entity.
 
-## Who benefits?
+## 谁将从中受益?
 
 Ultimately miners will benefit if a future hardfork that changes the block capacity limit to be a single
 weighted sum of parameters. For example:
@@ -379,4 +300,3 @@ to be mined.
  * [Gregory Maxwell on bitcoin-dev on witness limits](https://lists.linuxfoundation.org/pipermail/bitcoin-dev/2015-December/011870.html)
  * ["Validation Cost Metric" transcript](http://diyhpl.us/wiki/transcripts/scalingbitcoin/hong-kong/validation-cost-metric/)
 
-在本质上，一个交易的大小增加一倍,签名操作的个数也增加，以及数据的具有待哈希每个的量加倍这些签名进行验证。
